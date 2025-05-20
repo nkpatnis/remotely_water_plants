@@ -1,57 +1,9 @@
-from machine import Timer, RTC
 import network
 from time import sleep
-from utils import Led, LONG_DELAY, SHORT_DELAY
-import requests
-import json
+from utils import Led
 import gc
 
 led = Led()
-
-class RealTime():
-    counter = 0        
-
-    def fetch_time(self):
-        rtc = RTC()
-        self.counter += 1
-
-        long_retry_time = LONG_DELAY
-
-        print("Fetching Time")
-
-        led.action()
-        try:
-            # https://timeapi.io/swagger/index.html
-            response = requests.get(
-                "https://timeapi.io/api/time/current/zone?timeZone=Asia%2FKolkata", timeout=10
-            )
-            response_code = response.status_code
-            if response_code != 200:
-                retry_time = long_retry_time if self.counter > 5 else 60
-                print(f"Error: Retry after {retry_time} Scs", 0, 16)
-                sleep(retry_time)
-                self.fetch_time()
-
-            response = json.loads(response.content)
-
-            # Extract time
-            year = int(response["year"])
-            month = int(response["month"])  # Placeholder
-            day = int(response["day"])  # Placeholder
-            hour = int(response["hour"])  # Placeholder
-            minute = int(response["minute"])  # Placeholder
-            second = int(response["seconds"])  # Placeholder
-
-            # Set RTC
-            rtc.datetime((year, month, day, 0, hour, minute, second, 0))
-            print("time set")
-            sleep(1)
-        except Exception as e:
-            gc.collect()
-            print(f"Error: {str(e)}\nRetry in {long_retry_time} Seconds")
-            sleep(long_retry_time)
-            self.fetch_time()
-
 
 class WiFi:
     def __init__(self, ssid, password):
@@ -106,7 +58,3 @@ class WiFi:
         gc.collect()
         sleep(60 % 5)
         self.connect()
-
-    def sync_rtc(self):
-        rt = RealTime()
-        rt.fetch_time()

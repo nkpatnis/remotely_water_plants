@@ -1,5 +1,5 @@
 import os
-from machine import Pin, Timer, RTC
+from machine import Pin, RTC
 from utime import sleep
 import json
 
@@ -35,7 +35,6 @@ class Led:
 
     def off(self):
         self.indicator.off()
-
 
 
 def get_system_datetime():
