@@ -32,9 +32,12 @@ class TelegramBot:
     # Main telegram bot loop.
     # Should be executed asynchronously, like with:
     # asyncio.create_task(bot.run())
-    async def run(self):
+    async def run(self, logs):
         print("[telegram] Bot task started")
         self.send(ADMIN, f"[telegram] Bot task started")
+        for l in logs:
+            self.send(ADMIN, l)
+            
         while self.active:
             if self.reconnect:
                 if self.debug: print("[telegram] Reconnecting socket.")

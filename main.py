@@ -1,5 +1,7 @@
 from machine import Pin
 import asyncio
+# never call inside async loop/task
+from time import sleep
 from lib.utils import Record, get_system_datetime
 from lib.wifi import WiFi
 from lib.telegram import TelegramBot
@@ -11,7 +13,7 @@ from secrets import AUTHORIZED_USERS, BOT_TOKEN, PASS, SSID
 WATER_DURATION = 90
 MIN_H = 55
 OFF = 1
-ON = 1
+ON = 0
 
 
 def is_authorized(chat_id):
@@ -23,6 +25,8 @@ pump = Pin(15, Pin.OUT)
 record = Record()
 wifi = WiFi(SSID, PASS)
 
+logs = []
+
 def setup():
     print("Setting Up")
     pump.value(OFF)  # making sure pump is in off state
@@ -30,7 +34,15 @@ def setup():
     # must not be called under asyncio as they use time.sleep
     # Connect to internet and sync RTC
     wifi.connect()
-    settime()
+
+    def sync_time():
+        success, msg = settime()
+        if not success:
+            logs.append(msg)
+            sleep(60)
+            sync_time()
+
+    sync_time()
 
 
 def get_sensor_data():
@@ -158,7 +170,7 @@ bot = TelegramBot(BOT_TOKEN, message_handler)
 loop = asyncio.get_event_loop()
 
 # Start the bot
-loop.create_task(bot.run())
+loop.create_task(bot.run(logs))
 
 # Run the event loop
 loop.run_forever()

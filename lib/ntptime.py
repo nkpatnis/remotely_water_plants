@@ -51,7 +51,7 @@ def settime():
         tm = utime.gmtime(t)
         machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
     except Exception as e:
-        print("Error", e)
-        sleep(60)
-        print("Retrying", e)
-        settime()
+        msg = f"Error, Retry after {60} Seconds, {str(e)}"
+        print(msg)
+        return False, msg
+    return True, None
