@@ -7,10 +7,10 @@ from lib.wifi import WiFi
 from lib.telegram import TelegramBot
 from lib.ntptime import settime
 from dht import DHT11
-from secrets import AUTHORIZED_USERS, BOT_TOKEN, PASS, SSID
+from secrets import AUTHORIZED_USERS, BOT_TOKEN, PASS, SSID, ADMIN2, ADMIN
 
 
-WATER_DURATION = 90
+WATER_DURATION = 20
 MIN_H = 55
 OFF = 1
 ON = 0
@@ -18,6 +18,11 @@ ON = 0
 
 def is_authorized(chat_id):
     return str(chat_id) in AUTHORIZED_USERS
+
+
+def publish_updates(bot, msg):
+    for admin in AUTHORIZED_USERS:
+        bot.send(admin, msg)
 
 
 sensor = DHT11(Pin(14))
@@ -76,6 +81,11 @@ def get_status():
 async def maintain_water(chat_id, bot):
     # NOTE: must run for some fixed time and turn off
     await turn_on(chat_id, bot)
+    await asyncio.sleep(60)
+    await turn_on(chat_id, bot)
+    await asyncio.sleep(80)
+    await turn_on(chat_id, bot)
+    await asyncio.sleep(100)
 
 
 def get_formatted_data(data):
@@ -84,6 +94,7 @@ def get_formatted_data(data):
 
 async def auto_action(chat_id, bot):
     try:
+        publish_updates(bot, "AUTO started")
         data = get_status()
         # Increment the count
         data["total_auto_run"] = data.get("total_auto_run", 0) + 1
@@ -92,8 +103,9 @@ async def auto_action(chat_id, bot):
 
         # Update the file
         record.write_to_file(data)
-        bot.send(chat_id, f"{get_formatted_data(data)}")
-        bot.send(chat_id, "Auto run complete.")
+
+        msg = f"AUTO complete. \n{get_formatted_data(data)}"
+        publish_updates(bot, msg)
     except Exception as e:
         print("An error occurred:", e)
         bot.send(chat_id, "Something Went Wrong ->")
@@ -101,17 +113,16 @@ async def auto_action(chat_id, bot):
 
 
 async def turn_on(chat_id, bot):
-    bot.send(chat_id, "ON started")
+    publish_updates(bot, "ON started")
     pump.value(ON)
-    await asyncio.sleep(WATER_DURATION)
+    await asyncio.sleep(int(WATER_DURATION))
     pump.value(OFF)
-    bot.send(chat_id, "ON complete.")
+    publish_updates(bot, "ON complete.")
 
 
 async def turn_off(chat_id, bot):
-    bot.send(chat_id, "OFF started")
     pump.value(OFF)
-    bot.send(chat_id, "OFF complete.")
+    publish_updates(bot, "OFF done.")
 
 
 # Define your message handler
@@ -145,8 +156,13 @@ def message_handler(
         )
 
     elif text == "/status":
-        data = get_status()
-        bot.send(chat_id, f"System is running normally.\n{get_formatted_data(data)}")
+        try:
+            data = get_status()
+            bot.send(
+                chat_id, f"System is running normally.\n{get_formatted_data(data)}"
+            )
+        except Exception as e:
+            publish_updates(bot, str(e))
 
     elif text == "/run_auto":
         asyncio.create_task(auto_action(chat_id, bot))

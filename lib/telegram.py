@@ -1,6 +1,6 @@
 import socket, ssl, time, uasyncio as asyncio, json, os, gc
 from lib.utils import get_system_datetime 
-from secrets import ADMIN
+from secrets import ADMIN, ADMIN2
 
 class TelegramBot:
     def __init__(self,token,callback):
@@ -35,6 +35,7 @@ class TelegramBot:
     async def run(self, logs):
         print("[telegram] Bot task started")
         self.send(ADMIN, f"[telegram] Bot task started")
+        self.send(ADMIN2, f"[telegram] Bot task started")
         for l in logs:
             self.send(ADMIN, l)
             
