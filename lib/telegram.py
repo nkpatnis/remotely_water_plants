@@ -197,6 +197,8 @@ class TelegramBot:
                             msg = entry['message']
                         elif "channel_post" in entry:
                             msg = entry['channel_post']
+                        else:
+                            msg = {}
 
                         # Fill the fields depending on the message
                         msg_type = None
