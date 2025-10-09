@@ -80,11 +80,11 @@ def get_status():
 
 async def maintain_water(chat_id, bot):
     # NOTE: must run for some fixed time and turn off
-    await turn_on(chat_id, bot)
+    await turn_on("1/3", bot)
     await asyncio.sleep(60)
-    await turn_on(chat_id, bot)
+    await turn_on("2/3", bot)
     await asyncio.sleep(80)
-    await turn_on(chat_id, bot)
+    await turn_on("3/3", bot)
     await asyncio.sleep(100)
 
 
@@ -112,12 +112,12 @@ async def auto_action(chat_id, bot):
         bot.send(chat_id, str(e))
 
 
-async def turn_on(chat_id, bot):
-    publish_updates(bot, "ON started")
+async def turn_on(id, bot):
+    publish_updates(bot, f"{id} started")
     pump.value(ON)
     await asyncio.sleep(int(WATER_DURATION))
     pump.value(OFF)
-    publish_updates(bot, "ON complete.")
+    publish_updates(bot, f"{id} stopped")
 
 
 async def turn_off(chat_id, bot):
@@ -172,6 +172,9 @@ def message_handler(
 
     elif text == "/off":
         asyncio.create_task(turn_off(chat_id, bot))
+
+    elif text == "/cancel":
+        bot.send(chat_id, f"Cancellation not available.")
     else:
         bot.send(chat_id, f"Sorry unable to understand.")
 

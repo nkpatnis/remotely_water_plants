@@ -1,6 +1,6 @@
 import socket, ssl, time, uasyncio as asyncio, json, os, gc
 from lib.utils import get_system_datetime 
-from secrets import ADMIN, ADMIN2
+from secrets import ADMIN, ADMIN2, AUTHORIZED_USERS
 
 class TelegramBot:
     def __init__(self,token,callback):
@@ -184,6 +184,21 @@ class TelegramBot:
                         # non getUpdates related API calls? Discard it.
                         if self.debug: print("Got reply from sendMessage/sendPhoto")
                     else:
+                        # print(res['result'])
+                        # cancel_entries = list(filter(lambda entry: entry["message"]["text"].lower() == "/cancel", res['result']))
+                        # if cancel_entries:
+                        #     cancel_msg = cancel_entries[len(cancel_entries) - 1]                  
+                        #     offset = cancel_msg['update_id']
+                        #     offset += len(res['result'])
+                        #     self.offset = offset
+                        #     if self.debug: print("New offset:", offset)
+                        #     self.rbuf_used = 0
+                        #     cancel_msg = cancel_msg["message"]
+                        #     for admin in AUTHORIZED_USERS:
+
+                        #         self.send(admin, f"All pending tasks cancelled by { cancel_msg['from']['username']}")  
+                        #     return
+                        
                         # Update the last message ID we get so we
                         # will get only next ones.
                         offset = res['result'][0]['update_id']
