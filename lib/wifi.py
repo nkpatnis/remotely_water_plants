@@ -1,6 +1,6 @@
 import network
 from time import sleep
-from utils import Led
+from lib.utils import Led
 import gc
 
 led = Led()
@@ -56,5 +56,5 @@ class WiFi:
         print("Retrying connection...")
         # Check if connection is successful
         gc.collect()
-        sleep(60 % 5)
+        sleep(60)
         self.connect()

@@ -7,7 +7,7 @@ from lib.wifi import WiFi
 from lib.telegram import TelegramBot
 from lib.ntptime import settime
 from dht import DHT11
-from secrets import AUTHORIZED_USERS, BOT_TOKEN, PASS, SSID, ADMIN2, ADMIN
+from secrets import AUTHORIZED_USERS, BOT_TOKEN, PASS, SSID
 
 
 WATER_DURATION = 20
@@ -75,17 +75,17 @@ def get_status():
         }
     )
 
+    record.write_to_file(data)
     return data
 
 
-async def maintain_water(chat_id, bot):
+async def maintain_water(bot):
     # NOTE: must run for some fixed time and turn off
     await turn_on("1/3", bot)
     await asyncio.sleep(60)
     await turn_on("2/3", bot)
     await asyncio.sleep(80)
     await turn_on("3/3", bot)
-    await asyncio.sleep(100)
 
 
 def get_formatted_data(data):
@@ -99,7 +99,7 @@ async def auto_action(chat_id, bot):
         # Increment the count
         data["total_auto_run"] = data.get("total_auto_run", 0) + 1
 
-        await maintain_water(chat_id, bot)
+        await maintain_water(bot)
 
         # Update the file
         record.write_to_file(data)
@@ -168,7 +168,7 @@ def message_handler(
         asyncio.create_task(auto_action(chat_id, bot))
 
     elif text == "/on":
-        asyncio.create_task(turn_on(chat_id, bot))
+        asyncio.create_task(turn_on("1/1", bot))
 
     elif text == "/off":
         asyncio.create_task(turn_off(chat_id, bot))
