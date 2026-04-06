@@ -1,5 +1,4 @@
 import utime
-from time import sleep
 
 try:
     import usocket as socket
@@ -14,7 +13,7 @@ except:
 host = "pool.ntp.org"
 # The NTP socket timeout can be configured at runtime by doing: ntptime.timeout = 2
 timeout = 5
-
+utc_offset = 19800  # UTC+5:30
 
 def time():
     NTP_QUERY = bytearray(48)
@@ -39,19 +38,19 @@ def time():
     else:
         raise Exception("Unsupported epoch: {}".format(EPOCH_YEAR))
 
-    return val - NTP_DELTA + 19800  # 19800 +5:30
+    return val - NTP_DELTA + utc_offset
 
 
 # There's currently no timezone support in MicroPython, and the RTC is set in UTC time.
 def settime():
-    print("Setting RTC")
     try:
         import machine
         t = time()
         tm = utime.gmtime(t)
         machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
+        print("Setting RTC")
     except Exception as e:
-        msg = f"Error, Retry after {60} Seconds, {str(e)}"
+        msg = f"Error, Retry after 60 Seconds, {str(e)}"
         print(msg)
         return False, msg
     return True, None

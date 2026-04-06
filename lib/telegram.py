@@ -105,7 +105,7 @@ class TelegramBot:
             # Limit the fetch to a single message since we are using
             # a fixed 4k buffer. Very large incoming messages will break
             # the reading loop: that's a trade off.
-            request = "GET /bot"+self.token+"/getUpdates?offset="+str(self.offset)+"&timeout=0&allowed_udpates=message&limit=1 HTTP/1.1\r\nHost:api.telegram.org\r\n\r\n"
+            request = "GET /bot"+self.token+"/getUpdates?offset="+str(self.offset)+"&timeout=0&allowed_updates=message&limit=1 HTTP/1.1\r\nHost:api.telegram.org\r\n\r\n"
 
         # Write the request to the SSL socket.
         if request != None:
@@ -290,9 +290,9 @@ class TelegramBot:
     # message up to 2k, in order to reduce the API back-and-forth.
     def send(self, chat_id, text, glue=False):
         if glue and len(self.outgoing) > 0 and \
-           len(self.outgoing[0]["text"])+len(text)+1 < 2048:
-            self.outgoing[0]["text"] += "\n"
-            self.outgoing[0]["text"] += text
+           len(self.outgoing[-1]["text"])+len(text)+1 < 2048:
+            self.outgoing[-1]["text"] += "\n"
+            self.outgoing[-1]["text"] += text
             return
         formatted_date, formatted_time = get_system_datetime()
         text = f"{formatted_date} {formatted_time}\n\n{text}"
